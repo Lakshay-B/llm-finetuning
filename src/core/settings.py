@@ -37,6 +37,7 @@ class TestSettings(CommonSettings):
 	CPT_TRAIN_RATIO: float = Field(0.85)
 	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(20)
 	INS_FT_MLP_BUCKET_NAME: str = Field("contract-data-batch")
+	MAX_SEQ_LEN_CPT: int = Field(8192)
 
 class LocalSettings(CommonSettings):
 	CPT_CONTRACT_SAMPLE_SIZE: int = Field(1500)
@@ -45,6 +46,7 @@ class LocalSettings(CommonSettings):
 	CPT_TRAIN_RATIO: float = Field(0.85)
 	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(10000)
 	INS_FT_MLP_BUCKET_NAME: str = Field("contract-data-batch")
+	MAX_SEQ_LEN_CPT: int = Field(8192)
 
 class ServerSettings(CommonSettings):
 	CPT_CONTRACT_SAMPLE_SIZE: int = Field(1500)
@@ -53,6 +55,7 @@ class ServerSettings(CommonSettings):
 	CPT_TRAIN_RATIO: float = Field(0.85)
 	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(10000)
 	INS_FT_MLP_BUCKET_NAME: str = Field("contract-data-batch")
+	MAX_SEQ_LEN_CPT: int = Field(8192)
 
 @lru_cache()
 def get_settings():
