@@ -1,0 +1,23 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+cache*.arrow
+
+# Virtual environments
+.venv
+
+# Local files/folders
+CUAD_v1/
+zips/
+.env
+cuad_all.json
+pg.ipynb
+test.ipynb
+playground.ipynb
+src/data_preparation/
+training_data/instruction_ft_data/cuad
+training_data/instruction_ft_data/multi_legal_pile

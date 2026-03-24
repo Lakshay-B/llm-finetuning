@@ -1,0 +1,200 @@
+contract_clause_question_generation:
+  model:
+    temperature: 0.8
+    max_tokens: 10000
+
+  prompt: |
+    You are a legal-domain data generation assistant.
+
+    TASK:
+    You are given a README text that contains a list of 41 contract clause categories.
+    Each category includes:
+    - Category name
+    - Description of the clause
+    - Answer format (Yes/No OR Entity/Date/Number/etc.)
+    - Group information (if applicable)
+
+    Your task is to generate 4-5 semantically different ways a reviewer might ask a question in order to determine whether a contract contains that clause or to extract the required answer.
+
+    INSTRUCTIONS:
+    Generate diverse but precise question variations that:
+    - Clearly correspond to the specific category
+    - Reflect how lawyers, analysts, or contract review systems might phrase the query
+    - Preserve the intent of the category description
+    - Match the expected answer format (Yes/No or entity/date/number/etc.)
+    - Avoid ambiguity with other categories
+    - Do NOT include explanations, answers or commentary.
+
+    RULES:
+    1. For Yes/No categories - Questions must be framed so the answer would logically be "Yes" or "No"
+    2. For entity/date/number-based categories - Questions must clearly request extraction of a specific value
+    3. Ensure no numbering inside lists.
+    4. Include all categories.
+
+    OUTPUT FORMAT:
+    Return ONLY valid JSON that is directly readable.
+    {
+      "DocumentName": ["Ques variation 1", "Ques variation 2", "Ques variation 3", "Ques variation 4", "Ques variation 5"],
+      "GoverningLaw": ["Ques variation 1", "Ques variation 2", "Ques variation 3", "Ques variation 4", "Ques variation 5"]
+      ...
+    }
+
+    INPUT:
+
+    {{README_TEXT}}
+
+    Generate the JSON output.
+
+contract_summarization:
+  model:
+    temperature: 0.8
+    max_tokens: 10000
+
+  prompt: |
+    You are a legal document summarization assistant.
+    You will be given a section of legal text from a contract. Your task is to produce a clear, structured summary that captures:
+
+    INSTRUCTIONS:
+    1. If present in the input text, the nature and type of the contract (e.g., service agreement, NDA, lease, partnership, employment, etc.), primary purpose of the agreement and the parties involved.
+    4. The key obligations and responsibilities of each party.
+    5. The core commercial terms (e.g., payment structure, term/duration, termination conditions) as stated in the given text.
+    6. The major risk allocation provisions (e.g., liability, indemnification, confidentiality, dispute resolution).
+    7. The general areas the section of the contract covers.
+
+    Do NOT:
+    - Include every clause or minor detail.
+    - Copy large portions of text verbatim.
+    - Provide legal advice.
+    - Hallucinate or infer terms that are not explicitly stated in the input contract text.
+
+    Write the summary in a concise, professional tone based on the input text.
+
+    OUTPUT FORMAT:
+    Return ONLY valid JSON that is directly readable.
+    {
+        "summary": "{Your structured summary here}"
+    }
+
+    INPUT:
+
+    {{CONTRACT_TEXT}}
+
+    Generate the JSON output.
+
+entity_extraction:
+  model:
+    temperature: 0.8
+    max_tokens: 10000
+
+  prompt: |
+    You are a legal contract analysis assistant.
+
+    TASK:
+    Your task is to determine whether the input list of entities are explicitly present in the input contract text.
+
+    INSTRUCTIONS:
+    - DO NOT infer, assume, guess or interpret badly. If ambiguous, mark Answer as "No".
+    - For each entity, provide the exact text span from the contract that supports your answer. If not present, use "N/A".
+    - The supporting Span must be copied verbatim from the contract text. Do NOT paraphrase, do NOT modify wording and do NOT truncate mid-sentence unless necessary.
+    - If multiple clauses relate to the same entity, use the most direct and complete clause as the supporting span.
+    - Base decisions solely on contract text, which will be between the markers "=====START OF CONTRACT TEXT=====" and "=====END OF CONTRACT TEXT=====".
+
+    OUTPUT FORMAT (STRICT JSON ONLY):
+    - Output must be a valid JSON object with an array in which, each item is a dictionary (readable JSON) with three keys: "Entity", "Answer", and "Span". All the keys are required for each entity. (Refer the example below).
+    - For the "Answer" key, use the Answer Format provided (Yes/No for binary entities and the exact extracted value for non-binary entities).
+    - Do NOT include explanations, commentary, markdown.
+    - Do NOT include trailing commas.
+
+    Here is an example of the expected input and output:
+    INPUT:
+    ***
+    CONTRACT TEXT:
+    =====START=====
+    This Reseller Agreement is entered as of this ___ day of _________, 2004 ("Effective Date") by and between PivX Corporation, a California corporation, having its principal place of business at 23 Corporate Plaza Drive, Newport Beach, California, 92661 ("PivX") and Detto Technologies, a Washington corporation, having its principal place of business at 14320 NE 21st Street, Suite 11, Bellevue, Washington, 98007 ("Detto").
+    1.1 Subject to the terms and conditions of this Agreement, PivX hereby grants to Detto a non-transferable, exclusive license to distribute PivX's Qwik-Fix Pro and any documentation supporting Qwik-Fix Pro provided from time to time by PivX (the "Documentation") within North America, solely to third parties to whom Detto licenses Qwik-Fix Pro ("Third Parties"), and as governed by the terms set forth in Exhibit A (PivX/Detto Reseller Agreement Addendum). PivX also hereby grants to Detto a non-transferable, non-exclusive license to distribute PivX's Qwik-Fix Pro and the Documentation outside of North America, solely to Third Parties and as governed by the terms in Exhibit A. Detto shall have no right to reproduce Qwik-Fix Pro or any part thereof.
+    ....
+    6.4 Detto may not assign any of its rights or delegate any of its obligations hereunder, whether by operation of law or otherwise, without PivX's prior written consent. Subject to the foregoing, this Agreement shall bind and inure to the benefit of the parties, their respective successors and permitted assigns.
+    ....
+    6.7 This Agreement shall be governed by and construed under the laws of the State of California, excluding conflict of laws provisions and excluding the 1980 United Nations Convention on Contracts for the International Sale of Goods.
+    =====END=====
+    ENTITIES TO CHECK:
+    {"Entity": "Liquidated Damages", "Description": "Does the contract contain a clause that would award either party liquidated damages for breach or a fee upon the termination of a contract (termination fee)?", "Answer Format": "Yes/No"},
+    {"Entity": "Governing Law", "Description": "Which state/country's law governs the interpretation of the contract?", "Answer Format": "Name of a US State / non-US Province, Country"},
+    {"Entity": "Non-Transferable License", "Description": "Does the contract limit the ability of a party to transfer the license being granted to a third party?", "Answer Format": "Yes/No"},
+    {"Entity": "Agreement Date", "Description": "The date of the contract", "Answer Format": "Date (mm/dd/yyyy)"}}
+    ***
+
+    OUTPUT STRUCTURE:
+    ****
+    "Entities":[
+        {
+        "Entity": "Liquidated Damages",
+        "Answer": "No",
+        "Span": "N/A"
+        },
+        {
+        "Entity": "Governing Law",
+        "Answer": "California",
+        "Span": "This Agreement shall be governed by and construed under the laws of the State of California, excluding conflict of laws provisions and excluding the 1980 United Nations Convention on Contracts for the International Sale of Goods."
+        },
+        {
+        "Entity": "Non-Transferable License",
+        "Answer": "Yes",
+        "Span": "Subject to the terms and conditions of this Agreement, PivX hereby grants to Detto a non-transferable, exclusive license to distribute PivX's Qwik-Fix Pro and any documentation supporting Qwik-Fix Pro provided from time to time by PivX (the "Documentation") within North America, solely to third parties to whom Detto licenses Qwik-Fix Pro ("Third Parties"), and as governed by the terms set forth in Exhibit A (PivX/Detto Reseller Agreement Addendum). PivX also hereby grants to Detto a non-transferable, non-exclusive license to distribute PivX's Qwik-Fix Pro and the Documentation outside of North America, solely to Third Parties and as governed by the terms in Exhibit A."
+        },
+        {
+        "Entity": "Agreement Date",
+        "Answer": "[]/[]/2004",
+        "Span": "this ___ day of _________, 2004"
+        },
+    ]
+    ****
+
+    The above mentioned demonstration is only an example of how to expect your inputs and format your output.
+
+    Here are your actual inputs:
+
+    ENTITIES TO CHECK:
+    {{ENTITIES_TO_CHECK}}
+
+    ***CONTRACT TEXT INPUT***:
+    =====START OF CONTRACT TEXT=====
+    {{CONTRACT_TEXT}}
+    =====END OF CONTRACT TEXT=====
+
+    Generate the output.
+
+get_categories_description:
+  model:
+    temperature: 0.8
+    max_tokens: 10000
+
+  prompt: |
+    TASK:
+    You will be given a list of titles that represent different types of 'categories', that are actually clauses that may be present in a contract.
+    You will also be given a second input, which has the description for all the categories and explains what each category represents and the format of the answer expected for that category. Here, the title of the category might differ from the title in the first input.
+    you should be able to match the category title from the first input to the description in the second input.
+    Your task is to produce a JSON object that maps each category from the first list with the corresponding description and the answer format from the second input. You should be able to match the category title from the first input to the title and corresponding description in the second input.
+    Your output should be a list of dictionaries directly readable as a JSON array (no additional text), where each dictionary has 3 key-value pairs: Entity, Description, Answer Format.
+
+    Here is what the output should look like:
+    [
+      {
+        "Entity": "{title of the category from first input list}",
+        "Description": "{description of the category from the second input}",
+        "Answer Format": "{answer format of the category from the second input}"
+      },
+      ...
+    ]
+
+    Here is the list of titles of the categories:
+    */*/*/
+    {{CATEGORIES_LIST}}
+    */*/*/
+
+    Here are the descriptions and answer formats for all the categories:
+    */*/*/
+    {{CATEGORIES_DESCRIPTION_AND_ANSWER_FORMAT}}
+    */*/*/
+
+    Generate the output.
