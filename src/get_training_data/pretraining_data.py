@@ -1,10 +1,10 @@
-from .common import download_shuffled_samples, _add_key_column
-from src.core.settings import settings
+from .common import download_shuffled_samples
+from concurrent.futures import ThreadPoolExecutor
 from datasets import DatasetDict, concatenate_datasets
+from src.core.settings import settings
 from src.core.settings import settings
 
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 
 PRETRAINING_DATASETS = [
         ("joelniklaus/Multi_Legal_Pile", "en_contracts", settings.CPT_CONTRACT_SAMPLE_SIZE, False),
@@ -37,6 +37,6 @@ async def split_and_save_cpt_dataset(dataset_dict: DatasetDict):
         "train": concatenate_datasets(train_ds),
         "val": concatenate_datasets(val_ds)
     })
-    print("Saving pretraining dataset to %s", settings.CPT_DATA_DIR)
+    print("Saving pretraining dataset to: ", settings.CPT_DATA_DIR)
     cpt_dataset.save_to_disk(settings.CPT_DATA_DIR)
     return cpt_dataset

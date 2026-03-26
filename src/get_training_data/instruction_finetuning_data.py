@@ -1,4 +1,5 @@
 from .common import create_and_submit_batch_job, download_shuffled_samples, _add_key_column, poll_and_store_batch_results, get_text_splitter, _get_gemini_client, _get_prompt, calculate_token_count
+from src.get_training_data.cuad_data import load_cuad_resource
 from datasets import Dataset, load_from_disk
 from pathlib import Path
 from src.core.settings import settings
@@ -172,6 +173,29 @@ async def submit_summarization_batch_job(dataset: Dataset, key_column=None, disp
 
 ################################################################ Multi-part QnA ################################################################
 
+def get_categories_description():
+    try:
+        categories_description_prompt = _get_prompt("get_categories_description")["prompt"]
+        ques_cat_mapping = load_cuad_resource("Entities")
+        cuad_readme = load_cuad_resource("CUADReadme")
+        cuad_readme = cuad_readme.split("=================================================")
+        
+        categories_description_text = [_ for _ in cuad_readme if "CATEGORY LIST" in _][0].strip()
+        prompt = categories_description_prompt.replace("{{CATEGORIES_DESCRIPTION_AND_ANSWER_FORMAT}}", categories_description_text).replace("{{CATEGORIES_LIST}}", str(list(ques_cat_mapping.values())))
+        client = _get_gemini_client()
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt
+        )
+        category_description = json.loads(response.text)
+        with open(settings.INS_FT_CUAD_DATA_DIR / settings.INS_FT_CUAD_CATEGORY_DESCRIPTION, "w", encoding="utf-8") as f:
+            json.dump(category_description, f, indent=4)
+
+        print(f"Saved category descriptions for CUAD categories: {str(settings.INS_FT_CUAD_DATA_DIR / settings.INS_FT_CUAD_CATEGORY_DESCRIPTION)}.")
+    except Exception as e:
+        print(f"An error occurred while generating category descriptions: {e}")
+    return
+
 def get_qna_resources():
     prompt_template = _get_prompt("entity_extraction")["prompt"]
     client = _get_gemini_client()
@@ -213,18 +237,14 @@ async def submit_qna_batch_job(dataset: Dataset, key_column=None, display_name="
     prompt_template, client, schema = get_qna_resources()
     entries = []
     if not key_column:
-        key_column = "key" if "key" in dataset.column_names else "section_key"
+        key_column = "key" if not key_column else key_column
 
-    with open(f"training_data\instruction_ft_data\cuad\ques_samples.json", "r", encoding="utf-8") as f:
-        ques_samples = json.load(f)
-    with open(f"training_data\instruction_ft_data\multi_legal_pile\category-description.json", "r", encoding="utf-8") as f:
-        category_description = json.load(f)
-
-    categories = list(ques_samples.keys())
+    # categories = list(load_cuad_resource("Entities").values())
     ####
     # non_bool_cat = ["Document Name", "Parties", "Agreement Date", "Expiration Date", "Effective Date", "Renewal Term", "Notice Period To Terminate Renewal", "Governing Law"]
     ####
-    categories_str = ",\n".join([str(_) for _ in category_description if _["Entity"] in categories])
+    category_description = load_cuad_resource("ClauseCategoryDescriptions")
+    categories_str = ",\n".join([str(_) for _ in category_description])
 
     for contract in dataset:
         entries.append({

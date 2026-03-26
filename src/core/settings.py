@@ -1,6 +1,3 @@
-# settings.py
-
-# settings.py using Pydantic BaseSettings
 from pydantic_settings import BaseSettings
 from pydantic import Field
 from pathlib import Path
@@ -20,14 +17,12 @@ class CommonSettings(BaseSettings):
 	INS_FT_MLP_DATA_DIR_QNA: Path = Field(r'training_data\instruction_ft_data\qna')
 	INS_FT_MLP_BATCH_INPUT: Path = Field("batch_input.jsonl")
 	INS_FT_MLP_BATCH_RESULTS: Path = Field("batch_results")
-	INS_FT_CUAD_DATA_DIR: Path = Field(r'instruction_ft_data\cuad')
+	INS_FT_CUAD_DATA_DIR: Path = Field(r'training_data\instruction_ft_data\cuad')
 	INS_FT_MLP_CONTRACTS_DATASET: Path = Field('contracts_dataset')
-	INS_FT_CUAD_TEST_DIR: Path = Field('test_samples')
-	INS_FT_CUAD_TRAIN_DIR: Path = Field('train_samples')
-	INS_FT_CUAD_MASTER: Path = Field('master_clauses.csv')
 	INS_FT_CUAD_QUES_SAMPLES: Path = Field('ques_samples.json')
+	INS_FT_CUAD_CATEGORY_DESCRIPTION: Path = Field("clause_category_description.json")
+	INS_FT_CUAD_ENTITIES: Path = Field("entities.json")
 	INS_FT_CUAD_TEST_RATIO: float = Field(0.1)
-	INS_FT_MLP_CUAD_PATT_BATCH: Path = Field("mlp_cuad_batch_input.jsonl")
 	MLP_BUFFER_SIZE: int = Field(50000)
 
 class TestSettings(CommonSettings):
