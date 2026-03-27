@@ -236,14 +236,18 @@ def get_qna_resources():
 async def submit_qna_batch_job(dataset: Dataset, key_column=None, display_name="MLP_Contract_QnA_Batch", submit = True):
     prompt_template, client, schema = get_qna_resources()
     entries = []
-    if not key_column:
-        key_column = "key" if not key_column else key_column
+    key_column = "key" if not key_column else key_column
 
     # categories = list(load_cuad_resource("Entities").values())
     ####
     # non_bool_cat = ["Document Name", "Parties", "Agreement Date", "Expiration Date", "Effective Date", "Renewal Term", "Notice Period To Terminate Renewal", "Governing Law"]
     ####
-    category_description = load_cuad_resource("ClauseCategoryDescriptions")
+    try:
+        category_description = load_cuad_resource("ClauseCategoryDescriptions")
+    except:
+        get_categories_description()
+        category_description = load_cuad_resource("ClauseCategoryDescriptions")
+
     categories_str = ",\n".join([str(_) for _ in category_description])
 
     for contract in dataset:

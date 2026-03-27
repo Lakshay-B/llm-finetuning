@@ -25,7 +25,7 @@ class CommonSettings(BaseSettings):
 	INS_FT_CUAD_TEST_RATIO: float = Field(0.1)
 	MLP_BUFFER_SIZE: int = Field(50000)
 
-class TestSettings(CommonSettings):
+class LocalSettings(CommonSettings):
 	CPT_CONTRACT_SAMPLE_SIZE: int = Field(20)
 	CPT_CASELAW_SAMPLE_SIZE: int = Field(20)
 	CPT_GEN_SAMPLE_SIZE: int = Field(5)
@@ -33,8 +33,9 @@ class TestSettings(CommonSettings):
 	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(20)
 	INS_FT_MLP_BUCKET_NAME: str = Field("contract-data-batch")
 	MAX_SEQ_LEN_CPT: int = Field(8192)
+	CPT_MODEL_PATH: Path = Field("pretrained_model")
 
-class LocalSettings(CommonSettings):
+class TestSettings(CommonSettings):
 	CPT_CONTRACT_SAMPLE_SIZE: int = Field(1500)
 	CPT_CASELAW_SAMPLE_SIZE: int = Field(1500)
 	CPT_GEN_SAMPLE_SIZE: int = Field(250)
@@ -42,8 +43,9 @@ class LocalSettings(CommonSettings):
 	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(10000)
 	INS_FT_MLP_BUCKET_NAME: str = Field("contract-data-batch")
 	MAX_SEQ_LEN_CPT: int = Field(8192)
+	CPT_MODEL_PATH: Path = Field("pretrained_model")
 
-class ServerSettings(CommonSettings):
+class GPUSettings(CommonSettings):
 	CPT_CONTRACT_SAMPLE_SIZE: int = Field(1500)
 	CPT_CASELAW_SAMPLE_SIZE: int = Field(1500)
 	CPT_GEN_SAMPLE_SIZE: int = Field(250)
@@ -51,16 +53,13 @@ class ServerSettings(CommonSettings):
 	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(10000)
 	INS_FT_MLP_BUCKET_NAME: str = Field("contract-data-batch")
 	MAX_SEQ_LEN_CPT: int = Field(8192)
+	CPT_MODEL_PATH: Path = Field("pretrained_model")
 
 @lru_cache()
 def get_settings():
-	"""
-	Returns a settings object for the given environment ('local' or 'server').
-	Loads variables from .env and sets defaults as needed.
-	"""
 	env = os.getenv('ENV', 'local')
-	if env == 'server':
-		return ServerSettings()
+	if env == 'gpu':
+		return GPUSettings()
 	if env == 'test':
 		return TestSettings()
 	return LocalSettings()

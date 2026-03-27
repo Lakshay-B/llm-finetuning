@@ -1,0 +1,97 @@
+TEST:
+  MODEL_CONFIG:
+    "model_name": "unsloth/Llama-3.2-3B"
+    "max_seq_length": 8192
+    "dtype": "float16"
+    "load_in_4bit": True
+  PEFT_CONFIG:
+    "r": 128
+    "target_modules": ["k_proj", "v_proj", "q_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "embed_tokens", "lm_head"]
+    "lora_alpha" : 32
+    "lora_dropout": 0
+    "bias": "none"
+    "use_gradient_checkpointing": True
+    "random_state": 3407
+    "use_rslora": True
+  CPT_TRAINING_ARGS:
+    "max_seq_length": 8192
+    "per_device_train_batch_size": 1
+    "per_device_eval_batch_size": 1
+    "gradient_accumulation_steps": 4
+    "learning_rate": 5e-5
+    "embedding_learning_rate": 5e-6
+    "warmup_steps": 10
+    "dataset_num_proc": 8
+    "max_steps": 100
+    "logging_steps": 10
+    "output_dir": "outputs"
+    "optim": "adamw_8bit"
+    "seed": 3407
+    "fp16": True
+    "bf16": False
+  IFT_TRAINER_ARGS: 
+    "max_seq_length": 8192
+    "packing": False
+  IFT_TRAINING_ARGS:
+    "per_device_train_batch_size": 2
+    "gradient_accumulation_steps": 2
+    "warmup_steps": 5
+    # "num_train_epochs": 1, # Set this for 1 full training run.
+    "max_steps": 60
+    "learning_rate": 2e-4
+    "logging_steps": 1
+    "optim": "adamw_8bit"
+    "weight_decay": 0.001
+    "lr_scheduler_type": "linear"
+    "seed": 3407
+    "output_dir": "outputs"
+    "report_to": "none" # Use TrackIO/WandB etc
+
+GPU:
+  MODEL_CONFIG:
+    "model_name": "unsloth/Llama-3.2-3B"
+    "max_seq_length": 8192
+    "dtype": "float16"
+    "load_in_4bit": True
+  PEFT_CONFIG:
+    "r": 128
+    "target_modules": ["k_proj", "v_proj", "q_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "embed_tokens", "lm_head"]
+    "lora_alpha" : 32
+    "lora_dropout": 0
+    "bias": "none"
+    "use_gradient_checkpointing": True
+    "random_state": 3407
+    "use_rslora": True
+  CPT_TRAINER_ARGS:
+    "max_seq_length": 8192
+    "per_device_train_batch_size": 1
+    "per_device_eval_batch_size": 1
+    "gradient_accumulation_steps": 4
+    "learning_rate": 5e-5
+    "embedding_learning_rate": 5e-6
+    "warmup_steps": 10
+    "dataset_num_proc": 8
+    "max_steps": 100
+    "logging_steps": 10
+    "output_dir": "outputs"
+    "optim": "adamw_8bit"
+    "seed": 3407
+    "fp16": True
+    "bf16": False
+  IFT_TRAINER_ARGS: 
+    "max_seq_length": 8192
+    "packing": False
+  IFT_TRAINING_ARGS:
+    "per_device_train_batch_size": 2
+    "gradient_accumulation_steps": 2
+    "warmup_steps": 5
+    # "num_train_epochs": 1, # Set this for 1 full training run.
+    "max_steps": 60
+    "learning_rate": 2e-4
+    "logging_steps": 1
+    "optim": "adamw_8bit"
+    "weight_decay": 0.001
+    "lr_scheduler_type": "linear"
+    "seed": 3407
+    "output_dir": "outputs"
+    "report_to": "none" # Use TrackIO/WandB etc
