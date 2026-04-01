@@ -126,12 +126,13 @@ def chunk_tokens_ift(batch, tokenizer, task: Literal["summary", "qa"]):
             all_chunks['set'].append(messages)
             all_chunks['input_ids'].append(input_ids)
             all_chunks['attention_mask'].append([1]*len(input_ids))
+            
     elif task == "qa":
         for text, entities in zip(batch["text"], batch["entities"]):
             messages = [
                 {"role": "system", "content": _get_prompt("clause_detection_system_prompt")["prompt"]},
                 {"role": "user", "content": text},
-                {"role": "assistant", "content": json.dumps({"Entities": entities})}
+                {"role": "assistant", "content": json.dumps({"Entities": entities})}   ### edit here
             ]
             input_ids = tokenizer.apply_chat_template(
                 messages,
