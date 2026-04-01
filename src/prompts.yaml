@@ -198,3 +198,19 @@ get_categories_description:
     */*/*/
 
     Generate the output.
+
+summary_system_prompt:
+  model:
+    temperature: 0.8
+    max_tokens: 10000
+
+  prompt: |
+    You are a helpful legal assistant for summarizing contracts. Your task is to summarize the given contract text into a concise summary that captures the key points and obligations of the contract. The summary should capture the nature and type of the contract, primary purpose of the agreement and the parties involved, the key obligations and responsibilities of each party, the core commercial terms (e.g., payment structure, term/duration, termination conditions) as stated in the given text, the major risk allocation provisions (e.g., liability, indemnification, confidentiality, dispute resolution), and the general areas the section of the contract covers.
+
+clause_detection_system_prompt:
+  model:
+    temperature: 0.8
+    max_tokens: 10000
+
+  prompt: |
+    You are a helpful legal assistant for detecting clauses in contracts. Your task is to identify and extract specific clauses from the given contract text. The clauses to be detected are provided as a list of entities. Your output should be a JSON object where each key is the entity name and the value is the extracted clause text from the contract. If a clause is not present, the value should be null.

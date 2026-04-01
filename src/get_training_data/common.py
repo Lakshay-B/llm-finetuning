@@ -49,6 +49,8 @@ def download_shuffled_samples(dataset_name, config, n_samples, general=False, se
     collected = []
     for ex in stream:
         if general or ex.get("jurisdiction") == "US":
+            if ".jpg" in ex.get("text"):
+                continue
             collected.append(_format_unicode_example(ex))
             if len(collected) >= n_samples:
                 break

@@ -80,7 +80,7 @@ async def parse_results(
         key = line["key"]
         parts = line.get("response", {}).get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0]
         if parts == {}:
-            errorneous_keys[key] = f"ErrorInResponse"
+            errorneous_keys[key] = {"error": "ErrorInResponse", "content": "No parts found in response"}
         text = parts.get("text", "N/A")
         token_count = calculate_token_count(text, "llama") if text != "N/A" else 0
         records[key] = {
@@ -90,7 +90,7 @@ async def parse_results(
         try:
             json.loads(text)
         except Exception as e:
-            errorneous_keys[key] = f"ResponseJSONDecodeError: {e}"
+            errorneous_keys[key] = {"error": "ResponseJSONDecodeError", "content": str(e)}
             continue
 
     def add_fields(batch):
