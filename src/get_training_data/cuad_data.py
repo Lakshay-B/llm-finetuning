@@ -86,7 +86,7 @@ def get_master_cuad():
 
     return
 
-def synthesize_cuad_ques():
+def synthesize_cuad_ques_resources():
     readme = load_cuad_resource("CUADReadme")
     cat_and_tasks_sections = "\n".join([_.strip() for _ in readme.split("=================================================") if any(keyword in _ for keyword in ["CATEGORIES AND TASKS", "CATEGORY LIST"])])
     ques_synthesization_prompt = _get_prompt('contract_clause_question_generation')["prompt"].replace("{{README_TEXT}}", cat_and_tasks_sections)
@@ -102,7 +102,7 @@ def synthesize_cuad_ques():
                 "ContractResponse",
                 **{f: (List[str]) for f in list(ques_cat_mapping.keys())}
             )
-        ques_synthesization_prompt, client = synthesize_cuad_ques()
+        ques_synthesization_prompt, client = synthesize_cuad_ques_resources()
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
             contents = ques_synthesization_prompt,

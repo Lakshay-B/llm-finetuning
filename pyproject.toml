@@ -5,7 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "agent-framework>=1.0.0rc2",
     "datasets==3.6.0",
     "google-cloud-storage>=3.9.0",
     "google-genai>=1.63.0",
