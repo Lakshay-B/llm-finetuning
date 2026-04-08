@@ -13,6 +13,7 @@ from unsloth.chat_templates import get_chat_template
 
 import asyncio
 import json
+import random
 
 def load_model_and_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained(settings.MODEL_PATH)
@@ -54,15 +55,15 @@ def process_summary_dataset(sample):
         return sample 
 
 @lru_cache()
-def process_entity_dataset_resources():
+def get_process_entity_dataset_resources():
     categories = list(load_cuad_resource("Entities").values())
-    non_bool_category = ["Document Name", "Parties", "Agreement Date", "Expiration Date", "Effective Date", "Renewal Term", "Notice Period To Terminate Renewal", "Governing Law", "Warranty Duration"]
-    bool_category = [cat for cat in categories if cat not in non_bool_category]
+    non_bool_categories = ["Document Name", "Parties", "Agreement Date", "Expiration Date", "Effective Date", "Renewal Term", "Notice Period To Terminate Renewal", "Governing Law", "Warranty Duration"]
+    bool_categories = [cat for cat in categories if cat not in non_bool_categories]
     categories_processed = {cat.replace(" ", ""): cat for cat in categories}
-    return categories_processed, non_bool_category, bool_category
+    return categories_processed, non_bool_categories, bool_categories
 
 def process_entity_dataset(entity_dataset: Dataset):
-    categories_processed, non_bool_category, bool_category = process_entity_dataset_resources()
+    categories_processed, non_bool_categories, bool_categories = get_process_entity_dataset_resources()
     erroneous_entities = {}
     entity_dataset_list = []
     for i in entity_dataset:
@@ -74,9 +75,9 @@ def process_entity_dataset(entity_dataset: Dataset):
                 if entity_item["Entity"] not in list(categories_processed.values()):
                     entity_item["Entity"] = categories_processed[process.extractOne(entity_item["Entity"].replace(" ", ""), list(categories_processed.keys()), scorer = fuzz.token_sort_ratio)[0]]
                 
-                if entity_item["Entity"] in non_bool_category:
+                if entity_item["Entity"] in non_bool_categories:
                     pass
-                elif entity_item["Entity"] in bool_category:
+                elif entity_item["Entity"] in bool_categories:
                     if entity_item["Answer"].lower().strip() in ["n/a", "n o", "n / a"]:
                         entity_item["Answer"] = "No"
                     elif entity_item["Answer"].lower().strip() == "y e s":
@@ -104,6 +105,34 @@ def process_entity_dataset(entity_dataset: Dataset):
 
     return Dataset.from_list(entity_dataset_list), erroneous_entities
 
+def multipart_qa_resources():
+    _, non_bool_categories, bool_categories = get_process_entity_dataset_resources()
+    ques_samples = load_cuad_resource(resource = "SampleQuestions")
+    return ques_samples, bool_categories, non_bool_categories
+
+def prepare_multipart_qa(sample, ques_samples, bool_cat, non_bool_cat):
+    sample["qa_pairs"] = {"pos": [], "neg": []}
+    for entity in sample["entities"]:
+        if entity["Entity"] in bool_cat:
+            if entity["Answer"].lower().strip() in ["yes"]:
+                ques = random.choice(ques_samples[entity["Entity"]])
+                ans = f"{entity['Answer']}\nReference: {entity['Span']}"
+                sample["qa_pairs"]["pos"].append({"entity": entity["Entity"], "question": ques, "answer": ans})
+            else:
+                if len(sample["qa_pairs"]["neg"]) <= 10:
+                    ques = random.choice(ques_samples[entity["Entity"]])
+                    sample["qa_pairs"]["neg"].append({"entity": entity["Entity"], "question": ques, "answer": "N/A"})
+        elif entity["Entity"] in non_bool_cat:
+            if entity["Answer"].lower().strip() not in ["n/a", "no"]:
+                ques = random.choice(ques_samples[entity["Entity"]])
+                ans = f"{entity['Answer']}\nReference: {entity['Span']}"
+                sample["qa_pairs"]["pos"].append({"entity": entity["Entity"], "question": ques, "answer": ans})
+            else:
+                if len(sample["qa_pairs"]["neg"]) <= 10:
+                    ques = random.choice(ques_samples[entity["Entity"]])
+                    sample["qa_pairs"]["neg"].append({"entity": entity["Entity"], "question": ques, "answer": "N/A"})
+    return sample
+
 
 def chunk_tokens_ift(batch, tokenizer, task: Literal["summary", "qa"]):
     all_chunks = {"set": [], "input_ids": [], "attention_mask": []}
@@ -128,19 +157,34 @@ def chunk_tokens_ift(batch, tokenizer, task: Literal["summary", "qa"]):
             all_chunks['attention_mask'].append([1]*len(input_ids))
             
     elif task == "qa":
-        for text, entities in zip(batch["text"], batch["entities"]):
+        for text, qa_pairs in zip(batch["text"], batch["qa_pairs"]):
             messages = [
                 {"role": "system", "content": _get_prompt("clause_detection_system_prompt")["prompt"]},
                 {"role": "user", "content": text},
-                {"role": "assistant", "content": json.dumps({"Entities": entities})}   ### edit here
+                {"role": "assistant", "content": "How can I assist you with this contract?"}
             ]
-            input_ids = tokenizer.apply_chat_template(
-                messages,
-                tokenize = True,
-                add_generation_prompt = False
-            )
-            if len(input_ids)> max_tokens_sequence:
-                continue
+
+            for qa_pair in qa_pairs["pos"]:
+                messages.append({"role": "user", "content": qa_pair["question"]})
+                messages.append({"role": "assistant", "content": qa_pair["answer"]})
+                input_ids = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize = True,
+                    add_generation_prompt = False
+                )
+                if len(input_ids) > max_tokens_sequence:
+                    break
+
+            for qa_pair in qa_pairs["neg"]:
+                if len(input_ids) > max_tokens_sequence:
+                    break
+                messages.append({"role": "user", "content": qa_pair["question"]})
+                messages.append({"role": "assistant", "content": qa_pair["answer"]})
+                input_ids = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize = True,
+                    add_generation_prompt = False
+                )
             
             all_chunks['set'].append(messages)
             all_chunks['input_ids'].append(input_ids)

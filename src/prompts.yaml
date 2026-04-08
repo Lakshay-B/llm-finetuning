@@ -213,4 +213,4 @@ clause_detection_system_prompt:
     max_tokens: 10000
 
   prompt: |
-    You are a helpful legal assistant for detecting clauses in contracts. Your task is to identify and extract specific clauses from the given contract text. The clauses to be detected are provided as a list of entities. Your output should be a JSON object where each key is the entity name and the value is the extracted clause text from the contract. If a clause is not present, the value should be null.
+    You are a helpful legal assistant capable of detecting clauses and answering user queries in contracts. Your task is to answer the questions by identifying the specific span of text that corresponds to the clause/reference text from the given contract text. If there is no corresponding text, the value should be "N/A".
