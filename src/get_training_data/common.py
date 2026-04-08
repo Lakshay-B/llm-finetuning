@@ -10,6 +10,7 @@ from transformers import AutoTokenizer
 
 import asyncio
 import json
+import os
 import tiktoken
 import time
 import unicodedata
