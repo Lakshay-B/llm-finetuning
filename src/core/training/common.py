@@ -11,11 +11,11 @@ dtype_mapping = {
 }
 
 def load_training_config(name: Literal["Model", "Peft", "TrainingArgsCPT", "TrainerIFT", "TrainingArgsIFT"]):
-    with open(r"training_config.yaml") as f:
+    with open(os.path.join("src", "core", "training", "training_config.yaml")) as f:
         training_config = yaml.safe_load(f)
-    if os.getenv('ENV') == 'test':
+    if os.getenv('RUNTIME_ENV') == 'test':
         training_config = training_config['TEST']
-    elif os.getenv('ENV') == 'gpu':
+    elif os.getenv('RUNTIME_ENV') == 'gpu':
         training_config = training_config['GPU']
     else:
         return None

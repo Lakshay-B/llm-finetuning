@@ -20,7 +20,7 @@ _TOKENIZERS = {
     "llama": AutoTokenizer.from_pretrained("unsloth/Llama-3.2-3B")
 }
 
-with open(r"src\prompts.yaml") as f:
+with open(os.path.join("src", "prompts.yaml")) as f:
     PROMPTS = yaml.safe_load(f)
 
 def _get_prompt(prompt):

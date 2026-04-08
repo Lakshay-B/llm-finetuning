@@ -36,11 +36,11 @@ class LocalSettings(CommonSettings):
 	CPT_MODEL_PATH: Path = Field("pretrained_model")
 
 class TestSettings(CommonSettings):
-	CPT_CONTRACT_SAMPLE_SIZE: int = Field(1500)
-	CPT_CASELAW_SAMPLE_SIZE: int = Field(1500)
-	CPT_GEN_SAMPLE_SIZE: int = Field(250)
+	CPT_CONTRACT_SAMPLE_SIZE: int = Field(100)
+	CPT_CASELAW_SAMPLE_SIZE: int = Field(100)
+	CPT_GEN_SAMPLE_SIZE: int = Field(5)
 	CPT_TRAIN_RATIO: float = Field(0.85)
-	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(10000)
+	INS_FT_MLP_CONTRACT_SAMPLE_SIZE: int = Field(100)
 	INS_FT_MLP_BUCKET_NAME: str = Field("contract-data-batch")
 	MAX_SEQ_LEN_CPT: int = Field(8192)
 	CPT_MODEL_PATH: Path = Field("pretrained_model")
@@ -57,7 +57,7 @@ class GPUSettings(CommonSettings):
 
 @lru_cache()
 def get_settings():
-	env = os.getenv('ENV', 'local')
+	env = os.getenv('RUNTIME_ENV', 'local')
 	if env == 'gpu':
 		return GPUSettings()
 	if env == 'test':
