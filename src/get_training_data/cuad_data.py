@@ -22,8 +22,15 @@ def load_cuad_resource(resource: Literal["SampleQuestions", "Entities", "ClauseC
                 ques_samples = json.load(f)
             return ques_samples
         except FileNotFoundError:
-            print("Question samples not found. Ensure that file exists.")
-            return None
+            try:
+                print("Question samples not found. Attempting to synthesize.")
+                synthesize_cuad_ques()
+                with open(settings.INS_FT_CUAD_DATA_DIR / settings.INS_FT_CUAD_QUES_SAMPLES, "r", encoding="utf-8") as f:
+                    ques_samples = json.load(f)
+                return ques_samples
+            except:
+                print("Unable to load question samples.")
+                raise
 
     elif resource == "Entities":
         try:
@@ -31,17 +38,23 @@ def load_cuad_resource(resource: Literal["SampleQuestions", "Entities", "ClauseC
                 entities = json.load(f)
             return entities
         except FileNotFoundError:
-            print("Entities file not found. Ensure that file exists.")
-            return None
+            try:
+                get_master_cuad()
+                with open(settings.INS_FT_CUAD_DATA_DIR / settings.INS_FT_CUAD_ENTITIES, "r", encoding="utf-8") as f:
+                    entities = json.load(f)
+                return entities
+            except:
+                print("Unable to load Entities file.")
+                raise
     
     elif resource == "ClauseCategoryDescriptions":
         try:
-            with open(settings.INS_FT_CUAD_DATA_DIR / settings.INS_FT_CUAD_CLAUSE_CATEGORY_DESCRIPTIONS, "r", encoding="utf-8") as f:
+            with open(settings.INS_FT_CUAD_DATA_DIR / settings.INS_FT_CUAD_CATEGORY_DESCRIPTION, "r", encoding="utf-8") as f:
                 clause_category_descriptions = json.load(f)
             return clause_category_descriptions
         except FileNotFoundError:
             print("Clause category descriptions file not found. Ensure that file exists.")
-            return None
+            raise
     
     elif resource == "MasterData":
         try:
@@ -49,7 +62,7 @@ def load_cuad_resource(resource: Literal["SampleQuestions", "Entities", "ClauseC
             return master_cuad_data
         except FileNotFoundError:
             print("Master CUAD data file not found. Ensure that file exists.")
-            return None
+            raise
     
     elif resource == "CUADReadme":
         try:
@@ -83,8 +96,7 @@ def get_master_cuad():
 
     except Exception as e:
         print(f"An error occurred while processing master CUAD data and saving question samples: {e}\nCannot proceed with testing.")
-
-    return
+        raise
 
 def synthesize_cuad_ques_resources():
     readme = load_cuad_resource("CUADReadme")
@@ -97,7 +109,6 @@ def synthesize_cuad_ques_resources():
 def synthesize_cuad_ques():
     try:
         ques_cat_mapping = load_cuad_resource("Entities")
-
         CategoryQuestionsMapping = create_model(
                 "ContractResponse",
                 **{f: (List[str]) for f in list(ques_cat_mapping.keys())}
@@ -119,6 +130,7 @@ def synthesize_cuad_ques():
     
     except Exception as e:
         print(f"An error occurred while processing master CUAD data and saving question samples: {e}\nCannot proceed with testing.")
+        raise
     
     return
 

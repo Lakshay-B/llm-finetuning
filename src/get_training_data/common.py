@@ -35,7 +35,7 @@ def _get_gemini_client():
     )
 
 def _load_stream(dataset_name, config, split="train"):
-    return load_dataset(dataset_name, config, split=split, streaming=True)
+    return load_dataset(dataset_name, config, split=split, streaming=True, trust_remote_code=True)
 
 def _format_unicode_example(sample):
     sample["text"] = unicodedata.normalize("NFKC", sample["text"].strip())

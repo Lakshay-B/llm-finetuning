@@ -194,7 +194,7 @@ def get_categories_description():
         print(f"Saved category descriptions for CUAD categories: {str(settings.INS_FT_CUAD_DATA_DIR / settings.INS_FT_CUAD_CATEGORY_DESCRIPTION)}.")
     except Exception as e:
         print(f"An error occurred while generating category descriptions: {e}")
-    return
+        raise
 
 def get_qna_resources():
     prompt_template = _get_prompt("entity_extraction")["prompt"]
