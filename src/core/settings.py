@@ -65,10 +65,3 @@ def get_settings():
 	return LocalSettings()
 
 settings = get_settings()
-
-if __name__ == "__main__":
-	print("GEMINIAPIKEY:", settings.GEMINIAPIKEY)
-	print("PROJECT_ID:", settings.PROJECT_ID)
-	print(Path(__file__))
-	print(Path(__file__).parent)
-	print(Path(__file__).parent.parent / '.env')
